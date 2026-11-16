@@ -1,6 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
+from dotenv import load_dotenv
 import requests
+
+load_dotenv()
 
 API = "https://api.github.com"
 
