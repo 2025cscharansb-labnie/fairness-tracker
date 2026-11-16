@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import os
 import requests
 
@@ -59,8 +60,8 @@ def get_reviews(owner, repo, pr_number):
     return reviews
 
 
-def get_pull_requests(owner, repo, max_prs=30):
-    """Fetch pull requests, each with its reviews."""
+def get_pull_requests(owner, repo, max_prs=20):
+    """Fetch pull requests, each with its reviews (reviews fetched in parallel)."""
     url = f"{API}/repos/{owner}/{repo}/pulls"
     response = requests.get(
         url,
@@ -70,16 +71,15 @@ def get_pull_requests(owner, repo, max_prs=30):
     )
     response.raise_for_status()
 
-    pull_requests = []
-    for item in response.json():
+    def build(item):
         user = item.get("user")
-        pull_requests.append({
+        return {
             "number": item["number"],
             "author": user["login"] if user else "unknown",
             "title": item["title"],
             "merged": item["merged_at"] is not None,
             "reviews": get_reviews(owner, repo, item["number"]),
-        })
-    return pull_requests
+        }
 
-
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        return list(pool.map(build, response.json()))

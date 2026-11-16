@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Team Fairness Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 860px;
+            margin: 40px auto;
+            padding: 0 16px;
+            color: #222;
+        }
+
+        h1 {
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-top: 0;
+        }
+
+        form {
+            display: flex;
+            gap: 8px;
+            margin: 24px 0;
+        }
+
+        input[type=text] {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #2563eb;
+            color: #fff;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .flag {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 6px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f3f4f6;
+        }
+
+        .bar {
+            background: #e5e7eb;
+            border-radius: 4px;
+            height: 14px;
+            width: 140px;
+        }
+
+        .bar div {
+            background: #2563eb;
+            height: 14px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Team Fairness Tracker</h1>
+    <p class="subtitle">See who really contributed to a GitHub project.</p>
+
+    <form method="get" action="/">
+        <input type="text" name="repo_url" placeholder="https://github.com/owner/repo" value="{{ repo_url }}" required>
+        <button type="submit">Analyze</button>
+    </form>
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if result %}
+    <p class="score">Team fairness score: {{ result.fairness_score }}/100</p>
+
+    {% for flag in result.flags %}
+    <div class="flag">{{ flag }}</div>
+    {% endfor %}
+
+    <table>
+        <tr>
+            <th>Member</th>
+            <th>Commits</th>
+            <th>PRs</th>
+            <th>Merged</th>
+            <th>Reviews</th>
+            <th>Score</th>
+            <th>Share</th>
+        </tr>
+        {% for name, data in members %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ data.commits }}</td>
+            <td>{{ data.prs }}</td>
+            <td>{{ data.merged_prs }}</td>
+            <td>{{ data.reviews }}</td>
+            <td>{{ data.score }}</td>
+            <td>
+                <div class="bar">
+                    <div style="width: {{ result.shares.get(name, 0) }}%"></div>
+                </div>
+                {{ result.shares.get(name, 0) }}%
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</body>
+
+</html>
