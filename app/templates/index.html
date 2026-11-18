@@ -5,239 +5,896 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Team Fairness Tracker</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <style>
+        :root {
+            --sage: #A5A79B;
+            --cream: #E8D2B5;
+            --wine: #590907;
+            --wine2: #8a1c18;
+            --ink: #240302;
+            --paper: #f3e6d2;
+            --disp: "Bebas Neue", "Arial Narrow", Impact, sans-serif;
+            --serif: "Fraunces", Georgia, serif;
+            --sans: "Inter", system-ui, sans-serif
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 860px;
-            margin: 40px auto;
-            padding: 0 16px;
-            color: #222;
+            font-family: var(--sans);
+            background: var(--sage);
+            color: var(--ink);
+            line-height: 1.55;
+            overflow-x: hidden
+        }
+
+        a {
+            color: inherit
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--wine);
+            outline-offset: 3px
+        }
+
+        .wrap {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 24px
+        }
+
+        /* HERO */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            isolation: isolate
+        }
+
+        .slash {
+            position: absolute;
+            inset: 0 0 0 38%;
+            background: var(--wine);
+            clip-path: polygon(46% 0, 100% 0, 100% 100%, 0 100%);
+            z-index: -2;
+            transition: transform .2s
+        }
+
+        .ghost {
+            position: absolute;
+            right: -2vw;
+            bottom: -6vw;
+            font: clamp(180px, 32vw, 460px)/.8 var(--disp);
+            color: transparent;
+            -webkit-text-stroke: 2px rgba(232, 210, 181, .22);
+            z-index: -1;
+            user-select: none;
+            transition: transform .2s
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 26px 0
+        }
+
+        .logo {
+            font: 28px var(--disp);
+            letter-spacing: .06em;
+            text-decoration: none;
+            color: var(--wine)
+        }
+
+        .navlinks {
+            display: flex;
+            gap: 28px;
+            font-size: 14px;
+            font-weight: 500
+        }
+
+        .navlinks a {
+            text-decoration: none;
+            color: var(--ink);
+            border-bottom: 2px solid transparent;
+            padding-bottom: 2px
+        }
+
+        .navlinks a:hover {
+            border-color: var(--wine)
+        }
+
+        .hero-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 40px;
+            align-items: center;
+            padding: 20px 0 70px
         }
 
         h1 {
-            margin-bottom: 4px;
+            font: clamp(76px, 11.5vw, 168px)/.86 var(--disp);
+            letter-spacing: .01em
         }
 
-        .subtitle {
-            color: #666;
-            margin-top: 0;
+        h1 .a {
+            display: block;
+            color: var(--wine)
+        }
+
+        h1 .b {
+            display: block;
+            color: var(--cream);
+            -webkit-text-stroke: 3px var(--wine);
+            paint-order: stroke fill
+        }
+
+        .lede {
+            font-family: var(--serif);
+            font-size: 19px;
+            max-width: 46ch;
+            margin: 22px 0 26px
         }
 
         form {
             display: flex;
-            gap: 8px;
-            margin: 24px 0;
+            gap: 10px;
+            max-width: 560px;
+            background: var(--cream);
+            padding: 8px;
+            border-radius: 999px;
+            box-shadow: 0 14px 34px rgba(36, 3, 2, .28)
         }
 
         input[type=text] {
             flex: 1;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #bbb;
-            border-radius: 6px;
+            min-width: 0;
+            border: 0;
+            background: transparent;
+            padding: 12px 18px;
+            font: 500 16px var(--sans);
+            color: var(--ink)
         }
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #2563eb;
-            color: #fff;
+        input[type=text]:focus {
+            outline: none
+        }
+
+        button.go {
             border: 0;
-            border-radius: 6px;
+            background: var(--wine);
+            color: var(--cream);
+            font: 600 15px var(--sans);
+            padding: 12px 26px;
+            border-radius: 999px;
             cursor: pointer;
+            transition: transform .15s, background .15s;
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        button.go:hover {
+            background: var(--wine2);
+            transform: translateY(-2px)
+        }
+
+        button.go.busy {
+            pointer-events: none;
+            opacity: .85
+        }
+
+        .spin {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--cream);
+            border-top-color: transparent;
+            border-radius: 50%;
+            display: none;
+            animation: r .7s linear infinite
+        }
+
+        .busy .spin {
+            display: block
+        }
+
+        @keyframes r {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+            font-size: 13px;
+            align-items: center
+        }
+
+        .chip {
+            border: 1.5px solid var(--wine);
+            background: transparent;
+            color: var(--wine);
+            padding: 5px 13px;
+            border-radius: 999px;
+            cursor: pointer;
+            font: 500 13px var(--sans);
+            transition: .15s
+        }
+
+        .chip:hover {
+            background: var(--wine);
+            color: var(--cream)
         }
 
         .error {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 6px;
+            margin-top: 18px;
+            max-width: 560px;
+            background: var(--ink);
+            color: var(--cream);
+            padding: 14px 18px;
+            border-radius: 14px;
+            border-left: 6px solid #d9534f;
+            animation: shake .4s
         }
 
-        .score {
-            font-size: 28px;
-            font-weight: bold;
+        @keyframes shake {
+            25% {
+                transform: translateX(-6px)
+            }
+
+            75% {
+                transform: translateX(6px)
+            }
+        }
+
+        /* SCORECARD */
+        .scorecard {
+            background: var(--cream);
+            border-radius: 26px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, .35);
+            transition: transform .15s;
+            max-width: 360px;
+            margin-left: auto;
+            width: 100%
+        }
+
+        .ring {
+            position: relative;
+            width: 210px;
+            height: 210px;
+            margin: 0 auto 14px
+        }
+
+        .ring svg {
+            transform: rotate(-90deg)
+        }
+
+        .ring circle {
+            fill: none;
+            stroke-width: 16;
+            stroke-linecap: round
+        }
+
+        .ring .t {
+            stroke: rgba(89, 9, 7, .14)
+        }
+
+        .ring .p {
+            stroke: var(--wine);
+            stroke-dasharray: 553;
+            stroke-dashoffset: 553;
+            transition: stroke-dashoffset 1.6s cubic-bezier(.2, .8, .2, 1)
+        }
+
+        .ring .n {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font: 84px/1 var(--disp);
+            color: var(--wine)
+        }
+
+        .ring .n small {
+            display: block;
+            font: 500 13px var(--sans);
+            color: var(--ink);
+            opacity: .7;
+            margin-top: -10px
+        }
+
+        .verdict {
+            font: 600 24px var(--serif);
+            color: var(--wine)
+        }
+
+        .sub {
+            font-size: 14px;
+            opacity: .75;
+            margin-top: 4px
+        }
+
+        .tag {
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--wine);
+            color: var(--cream);
+            padding: 4px 12px;
+            border-radius: 999px
+        }
+
+        /* REPORT */
+        .report {
+            background: var(--cream);
+            padding: 90px 0 100px;
+            position: relative
+        }
+
+        .report::before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--sage);
+            clip-path: polygon(0 0, 100% 0, 0 100%)
+        }
+
+        h2 {
+            font: clamp(48px, 7vw, 92px)/.9 var(--disp);
+            color: var(--wine);
+            margin-bottom: 34px
+        }
+
+        .rgrid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 34px;
+            align-items: start
+        }
+
+        .panel {
+            background: var(--paper);
+            border-radius: 22px;
+            padding: 26px;
+            border: 1.5px solid rgba(89, 9, 7, .15)
+        }
+
+        .panel h3 {
+            font: 600 18px var(--serif);
+            color: var(--wine);
+            margin-bottom: 12px
         }
 
         .flag {
-            background: #fef3c7;
-            color: #92400e;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin: 6px 0;
+            background: var(--wine);
+            color: var(--cream);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin: 8px 0;
+            font-size: 15px;
+            border-left: 6px solid var(--sage)
         }
 
-        .chart-box {
-            max-width: 340px;
-            margin: 20px auto;
-        }
-
-        .hint {
-            color: #666;
-            font-size: 14px;
-            margin-top: 16px;
+        .ok {
+            background: var(--sage);
+            color: var(--ink);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 500
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
+            margin-top: 28px;
+            background: var(--paper);
+            border-radius: 22px;
+            overflow: hidden
         }
 
         th {
-            background: #f3f4f6;
+            background: var(--wine);
+            color: var(--cream);
+            text-align: left;
+            font: 600 13px var(--sans);
+            padding: 14px 12px
         }
 
-        .member-row {
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid rgba(89, 9, 7, .12)
+        }
+
+        .mrow {
             cursor: pointer;
+            transition: background .15s
         }
 
-        .member-row:hover {
-            background: #f9fafb;
+        .mrow:hover {
+            background: rgba(165, 167, 155, .3)
+        }
+
+        .who {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600
+        }
+
+        .av {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--wine);
+            color: var(--cream);
+            display: grid;
+            place-items: center;
+            font: 20px var(--disp)
+        }
+
+        .sc {
+            font: 30px var(--disp);
+            color: var(--wine)
+        }
+
+        .bar {
+            height: 12px;
+            width: 130px;
+            background: rgba(89, 9, 7, .14);
+            border-radius: 99px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px
+        }
+
+        .bar i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--wine), var(--wine2));
+            border-radius: 99px;
+            transition: width 1.2s cubic-bezier(.2, .8, .2, 1)
         }
 
         .details {
-            display: none;
-            background: #f9fafb;
+            display: none
         }
 
         .details.open {
             display: table-row;
+            animation: dn .3s
+        }
+
+        @keyframes dn {
+            from {
+                opacity: 0
+            }
+        }
+
+        .details td {
+            background: rgba(165, 167, 155, .22)
         }
 
         .details ul {
-            margin: 4px 0;
-            padding-left: 18px;
+            list-style: none;
+            padding: 4px 6px
         }
 
         .details li {
-            margin: 4px 0;
-            font-size: 14px;
+            padding: 5px 0;
+            font-size: 14px
         }
 
         .details code {
-            background: #e5e7eb;
-            padding: 1px 5px;
-            border-radius: 4px;
+            background: var(--wine);
+            color: var(--cream);
+            padding: 1px 7px;
+            border-radius: 6px;
+            font-size: 12px
         }
 
         .skipped {
-            color: #888;
+            opacity: .55
         }
 
-        .tag {
-            background: #e5e7eb;
-            color: #555;
-            font-size: 12px;
-            padding: 1px 6px;
-            border-radius: 4px;
+        .skip-tag {
+            font-size: 11px;
+            background: var(--sage);
+            padding: 1px 8px;
+            border-radius: 99px;
+            margin-left: 6px
         }
 
-        .bar {
-            background: #e5e7eb;
-            border-radius: 4px;
-            height: 14px;
-            width: 140px;
+        .hintline {
+            font-size: 14px;
+            margin-top: 22px;
+            opacity: .75
         }
 
-        .bar div {
-            background: #2563eb;
-            height: 14px;
-            border-radius: 4px;
+        /* HOW IT WORKS */
+        .how {
+            background: var(--wine);
+            color: var(--cream);
+            padding: 100px 0
+        }
+
+        .how h2 {
+            color: var(--cream)
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px
+        }
+
+        .sw {
+            border-radius: 24px;
+            padding: 30px 26px 34px;
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            transition: transform .25s
+        }
+
+        .sw:hover {
+            transform: translateY(-8px) rotate(-.6deg)
+        }
+
+        .sw h3 {
+            font: 600 32px/1.05 var(--serif);
+            margin-bottom: 12px
+        }
+
+        .sw p,
+        .sw li {
+            font-size: 15px
+        }
+
+        .sw ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 8px
+        }
+
+        .sw li {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid rgba(36, 3, 2, .25);
+            padding: 6px 0
+        }
+
+        .sw b {
+            font: 22px var(--disp);
+            letter-spacing: .04em
+        }
+
+        .s1 {
+            background: var(--sage);
+            color: var(--ink)
+        }
+
+        .s2 {
+            background: var(--cream);
+            color: var(--ink)
+        }
+
+        .s3 {
+            background: #3a0605;
+            color: var(--cream);
+            border: 1.5px solid rgba(232, 210, 181, .4)
+        }
+
+        .note {
+            margin-top: 30px;
+            font-family: var(--serif);
+            font-size: 17px;
+            max-width: 62ch;
+            opacity: .9
+        }
+
+        footer {
+            background: var(--ink);
+            color: var(--cream);
+            padding: 34px 0;
+            font-size: 14px
+        }
+
+        footer .wrap {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px
+        }
+
+        @media(max-width:860px) {
+
+            .hero-grid,
+            .rgrid,
+            .cards {
+                grid-template-columns: 1fr
+            }
+
+            .slash {
+                inset: 45% 0 0 0;
+                clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%)
+            }
+
+            .scorecard {
+                margin: 0 auto
+            }
+
+            .navlinks {
+                display: none
+            }
+
+            .hide-s {
+                display: none
+            }
+
+            .bar {
+                width: 70px
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+            * {
+                animation: none !important;
+                transition: none !important
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>Team Fairness Tracker</h1>
-    <p class="subtitle">See who really contributed to a GitHub project.</p>
+    {% set score = result.fairness_score if result else 78 %}
+    {% set verdict = 'Well balanced' if score >= 80 else ('Uneven split' if score >= 50 else 'Heavily lopsided') %}
 
-    <form method="get" action="/">
-        <input type="text" name="repo_url" placeholder="https://github.com/owner/repo" value="{{ repo_url }}" required>
-        <button type="submit">Analyze</button>
-    </form>
+    <header class="hero" id="top">
+        <div class="slash" id="slash"></div>
+        <div class="ghost" id="ghost" aria-hidden="true">FAIR</div>
+        <div class="wrap" style="width:100%;flex:1;display:flex;flex-direction:column">
+            <nav>
+                <a class="logo" href="/">FAIRNESS/TRACKER</a>
+                <div class="navlinks">
+                    <a href="#top">Analyze</a>
+                    {% if result %}<a href="#report">Report</a>{% endif %}
+                    <a href="#how">How it works</a>
+                </div>
+            </nav>
+            <div class="hero-grid">
+                <div>
+                    <h1><span class="a">Every commit,</span><span class="b">counted.</span></h1>
+                    <p class="lede">Paste a GitHub repository and see who actually carried the project: commits, pull
+                        requests and reviews, weighed into one team fairness score.</p>
+                    <form method="get" action="/" id="f">
+                        <input type="text" id="repo" name="repo_url" placeholder="https://github.com/owner/repo"
+                            value="{{ repo_url }}" required aria-label="GitHub repository URL">
+                        <button class="go" type="submit" id="go"><span class="spin"></span><span
+                                id="gol">Analyze</span></button>
+                    </form>
+                    <div class="chips">
+                        <span>Try one:</span>
+                        <button class="chip" type="button"
+                            data-u="https://github.com/pallets/flask">pallets/flask</button>
+                        <button class="chip" type="button"
+                            data-u="https://github.com/psf/requests">psf/requests</button>
+                        <button class="chip" type="button"
+                            data-u="https://github.com/tiangolo/fastapi">tiangolo/fastapi</button>
+                    </div>
+                    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+                </div>
 
-    {% if error %}
-    <p class="error">{{ error }}</p>
-    {% endif %}
+                <div class="scorecard" id="card">
+                    <div class="ring" data-score="{{ score }}">
+                        <svg viewBox="0 0 200 200" width="210" height="210">
+                            <circle class="t" cx="100" cy="100" r="88" />
+                            <circle class="p" cx="100" cy="100" r="88" />
+                        </svg>
+                        <div class="n">
+                            <div><span data-count="{{ score }}">0</span><small>out of 100</small></div>
+                        </div>
+                    </div>
+                    <div class="verdict">{{ verdict }}</div>
+                    <p class="sub">{% if result %}Team fairness score for this repository{% else %}Your score appears
+                        here after you analyze a repo{% endif %}</p>
+                    {% if not result %}<span class="tag">Sample</span>{% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
 
     {% if result %}
-    <p class="score">Team fairness score: {{ result.fairness_score }}/100</p>
-
-    {% for flag in result.flags %}
-    <div class="flag">{{ flag }}</div>
-    {% endfor %}
-
-    {% if members %}
-    <div class="chart-box"><canvas id="shareChart"></canvas></div>
-    <script>
-        new Chart(document.getElementById('shareChart'), {
-            type: 'doughnut',
-            data: {
-                labels: {{ chart_labels | tojson }},
-            datasets: [{ data: {{ chart_values | tojson }} }]
-        },
-            options: {
-            plugins: { title: { display: true, text: 'Contribution score by member' } }
-        }
-      });
-    </script>
-    {% endif %}
-
-    <p class="hint">Click a member to see their commits.</p>
-    <table>
-        <tr>
-            <th>Member</th>
-            <th>Commits</th>
-            <th>PRs</th>
-            <th>Merged</th>
-            <th>Reviews</th>
-            <th>Score</th>
-            <th>Share</th>
-        </tr>
-        {% for name, data in members %}
-        <tr class="member-row" onclick="document.getElementById('d{{ loop.index }}').classList.toggle('open')">
-            <td>{{ name }}</td>
-            <td>{{ data.commits }}</td>
-            <td>{{ data.prs }}</td>
-            <td>{{ data.merged_prs }}</td>
-            <td>{{ data.reviews }}</td>
-            <td>{{ data.score }}</td>
-            <td>
-                <div class="bar">
-                    <div style="width: {{ result.shares.get(name, 0) }}%"></div>
+    <section class="report" id="report">
+        <div class="wrap">
+            <h2>Who did the work</h2>
+            <div class="rgrid">
+                <div class="panel">
+                    <h3>Contribution split</h3>
+                    {% if members %}<canvas id="shareChart" aria-label="Contribution score by member"
+                        data-labels='{{ chart_labels | tojson }}' data-values='{{ chart_values | tojson }}'></canvas>{%
+                    else %}<p>No chart: nothing was counted.</p>{% endif %}
                 </div>
-                {{ result.shares.get(name, 0) }}%
-            </td>
-        </tr>
-        <tr class="details" id="d{{ loop.index }}">
-            <td colspan="7">
-                {% set member_commits = commits_by_member.get(name, []) %}
-                {% if member_commits %}
-                <ul>
-                    {% for c in member_commits %}
-                    <li class="{{ '' if c.counted else 'skipped' }}">
-                        <code>{{ c.sha }}</code> {{ c.date }} &mdash; {{ c.message }}
-                        {% if not c.counted %}<span class="tag">not counted</span>{% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p>No commits found for this member in the latest 100.</p>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+                <div class="panel">
+                    <h3>What stands out</h3>
+                    {% for flag in result.flags %}<div class="flag">{{ flag }}</div>{% endfor %}
+                    {% if not result.flags %}<div class="ok">No red flags. Work is spread fairly across the team.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if members %}
+            <table>
+                <tr>
+                    <th>Member</th>
+                    <th>Commits</th>
+                    <th class="hide-s">PRs</th>
+                    <th class="hide-s">Merged</th>
+                    <th>Reviews</th>
+                    <th>Score</th>
+                    <th>Share</th>
+                </tr>
+                {% for name, data in members %}
+                <tr class="mrow" tabindex="0" data-t="d{{ loop.index }}" aria-expanded="false">
+                    <td>
+                        <div class="who"><span class="av">{{ name[:1] | upper }}</span>{{ name }}</div>
+                    </td>
+                    <td>{{ data.commits }}</td>
+                    <td class="hide-s">{{ data.prs }}</td>
+                    <td class="hide-s">{{ data.merged_prs }}</td>
+                    <td>{{ data.reviews }}</td>
+                    <td class="sc">{{ data.score }}</td>
+                    <td><span class="bar"><i data-w="{{ result.shares.get(name, 0) }}"></i></span>{{
+                        result.shares.get(name, 0) }}%</td>
+                </tr>
+                <tr class="details" id="d{{ loop.index }}">
+                    <td colspan="7">
+                        {% set mc = commits_by_member.get(name, []) %}
+                        {% if mc %}
+                        <ul>{% for c in mc %}
+                            <li class="{{ '' if c.counted else 'skipped' }}"><code>{{ c.sha }}</code> {{ c.date }}
+                                &mdash; {{ c.message }}{% if not c.counted %}<span class="skip-tag">not counted</span>{%
+                                endif %}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}<p>No commits found for this member in the latest 100.</p>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <p class="hintline">Select a member to see their commits. Merge commits and one-word messages are not
+                counted.</p>
+            {% endif %}
+        </div>
+    </section>
     {% endif %}
+
+    <section class="how" id="how">
+        <div class="wrap">
+            <h2>How the score works</h2>
+            <div class="cards">
+                <div class="sw s1">
+                    <h3>Collect</h3>
+                    <p>We read the latest 100 commits, 20 pull requests and every review on them, straight from the
+                        GitHub API.</p>
+                </div>
+                <div class="sw s2">
+                    <h3>Weigh</h3>
+                    <p>Each action earns points. Bigger contributions earn more.</p>
+                    <ul>
+                        <li>Commit <b>1</b></li>
+                        <li>Pull request opened <b>2</b></li>
+                        <li>Pull request merged <b>3</b></li>
+                        <li>Review given <b>2</b></li>
+                    </ul>
+                </div>
+                <div class="sw s3">
+                    <h3>Judge</h3>
+                    <p>A Gini coefficient turns the split into a 0 to 100 score. 100 means everyone did equal work.
+                        Anyone above 1.5 times or below half of a fair share is flagged.</p>
+                </div>
+            </div>
+            <p class="note">Reviewing your own pull request earns nothing, and trivial commits are skipped, so padding
+                the history does not help.</p>
+        </div>
+    </section>
+
+    <footer>
+        <div class="wrap"><span>Team Fairness Tracker</span><span>FastAPI &middot; Docker &middot; GitHub Actions</span>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var $ = function (s, e) { return (e || document).querySelector(s) }, $$ = function (s, e) { return Array.prototype.slice.call((e || document).querySelectorAll(s)) };
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // score ring + count-up
+            var ring = $('.ring'), score = +ring.dataset.score;
+            requestAnimationFrame(function () {
+                setTimeout(function () {
+                    $('.p', ring).style.strokeDashoffset = 553 * (1 - score / 100);
+                    var el = $('[data-count]'), t0 = null, dur = reduce ? 1 : 1600;
+                    (function step(ts) { t0 = t0 || ts; var k = Math.min((ts - t0) / dur, 1); el.textContent = Math.round(score * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step) })(performance.now());
+                }, 250)
+            });
+
+            // example chips
+            $$('.chip').forEach(function (c) { c.addEventListener('click', function () { var i = $('#repo'); i.value = c.dataset.u; i.focus() }) });
+
+            // loading state
+            $('#f').addEventListener('submit', function () { $('#go').classList.add('busy'); $('#gol').textContent = 'Analyzing' });
+
+            // hero parallax
+            if (!reduce) {
+                document.addEventListener('mousemove', function (e) {
+                    var x = e.clientX / innerWidth - .5, y = e.clientY / innerHeight - .5;
+                    $('#slash').style.transform = 'translate(' + (x * -18) + 'px,0)';
+                    $('#ghost').style.transform = 'translate(' + (x * 30) + 'px,' + (y * 16) + 'px)';
+                    $('#card').style.transform = 'perspective(900px) rotateY(' + (x * 8) + 'deg) rotateX(' + (y * -8) + 'deg)';
+                })
+            }
+
+            // member rows expand
+            $$('.mrow').forEach(function (r) {
+                function tog() { var d = document.getElementById(r.dataset.t); var o = d.classList.toggle('open'); r.setAttribute('aria-expanded', o) }
+                r.addEventListener('click', tog);
+                r.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tog() } });
+            });
+
+            // share bars fill + chart when report scrolls into view
+            var rep = $('#report');
+            if (rep) {
+                var fired = false;
+                function run() {
+                    if (fired) return; fired = true;
+                    $$('.bar i').forEach(function (b) { b.style.width = b.dataset.w + '%' });
+                    var cv = $('#shareChart');
+                    if (cv && window.Chart) {
+                        new Chart(cv, {
+                            type: 'doughnut',
+                            data: {
+                                labels: JSON.parse(cv.dataset.labels), datasets: [{
+                                    data: JSON.parse(cv.dataset.values),
+                                    backgroundColor: ['#590907', '#8a1c18', '#b5533f', '#d9a98a', '#A5A79B', '#3a0605', '#7b6f5d'], borderColor: '#f3e6d2', borderWidth: 3
+                                }]
+                            },
+                            options: { cutout: '62%', plugins: { legend: { position: 'bottom', labels: { color: '#240302', font: { family: 'Inter', weight: '500' } } } } }
+                        });
+                    }
+                }
+                new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) run() }) }, { threshold: .15 }).observe(rep);
+                setTimeout(function () { rep.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }) }, 1900);
+            }
+        })();
+    </script>
 </body>
 
 </html>
