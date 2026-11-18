@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Team Fairness Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -67,10 +68,21 @@
             margin: 6px 0;
         }
 
+        .chart-box {
+            max-width: 340px;
+            margin: 20px auto;
+        }
+
+        .hint {
+            color: #666;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 16px;
+            margin-top: 8px;
         }
 
         th,
@@ -82,6 +94,51 @@
 
         th {
             background: #f3f4f6;
+        }
+
+        .member-row {
+            cursor: pointer;
+        }
+
+        .member-row:hover {
+            background: #f9fafb;
+        }
+
+        .details {
+            display: none;
+            background: #f9fafb;
+        }
+
+        .details.open {
+            display: table-row;
+        }
+
+        .details ul {
+            margin: 4px 0;
+            padding-left: 18px;
+        }
+
+        .details li {
+            margin: 4px 0;
+            font-size: 14px;
+        }
+
+        .details code {
+            background: #e5e7eb;
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        .skipped {
+            color: #888;
+        }
+
+        .tag {
+            background: #e5e7eb;
+            color: #555;
+            font-size: 12px;
+            padding: 1px 6px;
+            border-radius: 4px;
         }
 
         .bar {
@@ -119,6 +176,23 @@
     <div class="flag">{{ flag }}</div>
     {% endfor %}
 
+    {% if members %}
+    <div class="chart-box"><canvas id="shareChart"></canvas></div>
+    <script>
+        new Chart(document.getElementById('shareChart'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ chart_labels | tojson }},
+            datasets: [{ data: {{ chart_values | tojson }} }]
+        },
+            options: {
+            plugins: { title: { display: true, text: 'Contribution score by member' } }
+        }
+      });
+    </script>
+    {% endif %}
+
+    <p class="hint">Click a member to see their commits.</p>
     <table>
         <tr>
             <th>Member</th>
@@ -130,7 +204,7 @@
             <th>Share</th>
         </tr>
         {% for name, data in members %}
-        <tr>
+        <tr class="member-row" onclick="document.getElementById('d{{ loop.index }}').classList.toggle('open')">
             <td>{{ name }}</td>
             <td>{{ data.commits }}</td>
             <td>{{ data.prs }}</td>
@@ -142,6 +216,23 @@
                     <div style="width: {{ result.shares.get(name, 0) }}%"></div>
                 </div>
                 {{ result.shares.get(name, 0) }}%
+            </td>
+        </tr>
+        <tr class="details" id="d{{ loop.index }}">
+            <td colspan="7">
+                {% set member_commits = commits_by_member.get(name, []) %}
+                {% if member_commits %}
+                <ul>
+                    {% for c in member_commits %}
+                    <li class="{{ '' if c.counted else 'skipped' }}">
+                        <code>{{ c.sha }}</code> {{ c.date }} &mdash; {{ c.message }}
+                        {% if not c.counted %}<span class="tag">not counted</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No commits found for this member in the latest 100.</p>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}
